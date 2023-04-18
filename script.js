@@ -80,6 +80,7 @@ class App {
 
   constructor() {
     this.#getPosition();
+    this.#getLocalStorage();
     form.addEventListener("submit", this.#newWorkout.bind(this)); // here the bind is because in this event handler function, this keyword refer to the element, namely form in this situation, by binding the this keyword, can set it to the app itself
     inputType.addEventListener("change", this.#toggleElevationField);
     containerWorkouts.addEventListener("click", this.#moveToPopup.bind(this));
@@ -111,6 +112,10 @@ class App {
     }).addTo(this.#map);
 
     this.#map.on("click", this.#showForm.bind(this)); // here same, before this was set to the map, bind this to make it set to app itself
+
+    this.#workouts.forEach((workout) => {
+      this.#renderWorkoutMarker(workout);
+    });
   }
 
   #showForm(event) {
@@ -191,6 +196,9 @@ class App {
 
     // clear input fields
     this.#hideForm();
+
+    // set local storage to all workouts
+    this.#setLocalStorage();
   }
 
   // display the marker
@@ -280,6 +288,29 @@ class App {
         duration: 1,
       },
     });
+  }
+
+  #setLocalStorage() {
+    localStorage.setItem("workouts", JSON.stringify(this.#workouts));
+    console.log(this.#workouts);
+    console.log(JSON.stringify(this.#workouts));
+  }
+
+  #getLocalStorage() {
+    const data = JSON.parse(localStorage.getItem("workouts"));
+
+    if (!data) return;
+
+    this.#workouts = data;
+
+    this.#workouts.forEach((workout) => {
+      this.#renderWorkout(workout);
+    });
+  }
+
+  reset() {
+    localStorage.removeItem("workouts");
+    location.reload();
   }
 }
 
