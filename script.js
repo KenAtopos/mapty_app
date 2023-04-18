@@ -74,13 +74,15 @@ class Cycling extends Workout {
 
 class App {
   #map;
+  #mapZoomLevel = 13;
   #mapEvent;
-  #workout = [];
+  #workouts = [];
 
   constructor() {
     this.#getPosition();
     form.addEventListener("submit", this.#newWorkout.bind(this)); // here the bind is because in this event handler function, this keyword refer to the element, namely form in this situation, by binding the this keyword, can set it to the app itself
     inputType.addEventListener("change", this.#toggleElevationField);
+    containerWorkouts.addEventListener("click", this.#moveToPopup.bind(this));
   }
 
   #getPosition() {
@@ -100,7 +102,7 @@ class App {
     // console.log(`https://www.google.com/maps/@${latitude},${longitude}`);
 
     const coords = [latitude, longitude];
-    this.#map = L.map("map").setView(coords, 13);
+    this.#map = L.map("map").setView(coords, this.#mapZoomLevel);
     //   console.log(map);
 
     L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png", {
@@ -179,7 +181,7 @@ class App {
     }
 
     // add new object to workout array
-    this.#workout.push(workout);
+    this.#workouts.push(workout);
 
     // render workout on the map
     this.#renderWorkoutMarker(workout);
@@ -261,6 +263,23 @@ class App {
     }
 
     form.insertAdjacentHTML("afterend", html);
+  }
+
+  #moveToPopup(event) {
+    const workoutEl = event.target.closest(".workout");
+
+    if (!workoutEl) return;
+
+    const workout = this.#workouts.find(
+      (work) => work.id === workoutEl.dataset.id
+    );
+
+    this.#map.setView(workout.coords, this.#mapZoomLevel, {
+      animate: true,
+      pan: {
+        duration: 1,
+      },
+    });
   }
 }
 
